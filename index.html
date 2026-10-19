@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f4ee">
+  <title>Moodly — prendre soin du collectif</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="loginOverlay" class="login-overlay">
+    <section class="login-box card" aria-labelledby="loginTitle">
+      <div class="brand login-brand">
+        <span class="brand-mark" aria-hidden="true"><i data-lucide="sparkles" class="icon"></i></span>
+        <div><strong>moodly</strong><small>prendre soin du collectif</small></div>
+      </div>
+      <div class="eyebrow">SSO d'entreprise · Espace sécurisé</div>
+      <h1 id="loginTitle">Comment ça va, vraiment ?</h1>
+      <p class="subtitle">Un petit check-in en 5 secondes pour prendre soin de vous et faire évoluer le quotidien au travail.</p>
+      <div class="onboard-points">
+        <div class="onboard-point"><i aria-hidden="true"><i data-lucide="lock-keyhole" class="icon"></i></i> Vos ressentis sont anonymisés et découplés de votre identité.</div>
+        <div class="onboard-point"><i aria-hidden="true"><i data-lucide="shield-heart" class="icon"></i></i> Un Bouclier Bien-être s'ouvre immédiatement en cas de journée difficile.</div>
+        <div class="onboard-point"><i aria-hidden="true"><i data-lucide="users" class="icon"></i></i> Détection automatique de votre rôle (Employé, Manager, RH) via votre email.</div>
+      </div>
+      <label class="field-label" for="loginEmail">Email professionnel (SSO Entreprise)</label>
+      <input id="loginEmail" type="email" placeholder="alex@entreprise.com" value="alex@entreprise.com" autocomplete="email">
+      <button id="loginButton" class="button" type="button">Se connecter via SSO <i data-lucide="arrow-right" class="icon" aria-hidden="true"></i></button>
+      <div class="demo-examples">
+        <strong>Comptes de démonstration rapide :</strong>
+        <div class="quick-roles">
+          <button type="button" class="quick-role-btn" data-demo-email="alex@entreprise.com">Employé (alex@)</button>
+          <button type="button" class="quick-role-btn" data-demo-email="manager@entreprise.com">Manager (manager@)</button>
+          <button type="button" class="quick-role-btn" data-demo-email="rh@entreprise.com">RH (rh@)</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="app">
+    <aside class="sidebar" aria-label="Navigation principale">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"><i data-lucide="sparkles" class="icon"></i></span>
+        <div><strong>moodly</strong><small>prendre soin du collectif</small></div>
+      </div>
+      <div class="nav-label">Mon espace</div>
+      <nav class="nav" aria-label="Sections">
+        <button class="active" data-view="checkin" aria-current="page"><span class="nav-icon" aria-hidden="true"><i data-lucide="clipboard-check" class="icon"></i></span>Check-in</button>
+        <button data-view="kudos"><span class="nav-icon" aria-hidden="true"><i data-lucide="heart-handshake" class="icon"></i></span>Kudos</button>
+        <div class="nav-label" id="navPilotageLabel" style="padding-top:20px">Pilotage</div>
+        <button data-view="manager"><span class="nav-icon" aria-hidden="true"><i data-lucide="cloud-sun" class="icon"></i></span>Météo équipe</button>
+        <button data-view="rh"><span class="nav-icon" aria-hidden="true"><i data-lucide="layout-dashboard" class="icon"></i></span>Cartographie RH</button>
+      </nav>
+      <div class="side-spacer"></div>
+      <div class="side-note">
+        <strong>Un espace de confiance</strong>
+        Les tableaux de bord masquent automatiquement toute équipe ayant moins de 5 répondants.
+      </div>
+      <div class="profile">
+        <div class="avatar" id="avatarInitials">AL</div>
+        <div class="profile-copy"><strong id="profileName">Alex Martin</strong><span id="profileRole">Collaborateur</span></div>
+        <button class="plain-icon" id="logoutButton" aria-label="Changer de compte SSO" title="Changer de compte SSO"><i data-lucide="log-out" class="icon"></i></button>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div class="crumb">Moodly <span aria-hidden="true">/</span> <strong id="crumbCurrent">Check-in quotidien</strong></div>
+        <div class="top-right">
+          <span class="date-chip" id="todayDate"></span>
+          <label class="hidden" for="roleSelect">Rôle de démonstration</label>
+          <select class="role-select" id="roleSelect" aria-label="Changer le rôle de démonstration">
+            <option value="employee">Vue : Employé</option>
+            <option value="manager">Vue : Manager</option>
+            <option value="hr">Vue : RH / Direction</option>
+          </select>
+        </div>
+      </header>
+
+      <div class="content">
+        <!-- VUE 1 : CHECK-IN EMPLOYÉ -->
+        <section id="view-checkin" class="view">
+          <div id="streakAlert" class="streak-alert hidden" role="status">
+            <div>
+              <strong>Bouclier Bien-être activé · 3 journées difficiles consécutives détectées</strong>
+              Vous avez signalé plusieurs journées pesantes récemment. Prenez 2 minutes pour souffler ou sollicitez une écoute confidentielle.
+            </div>
+            <button class="button small" type="button" data-open-breath>Respirer maintenant</button>
+          </div>
+
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">Votre rendez-vous avec vous-même</div>
+              <h1>Comment se passe votre journée ?</h1>
+              <p class="subtitle">Un clic suffit. Votre ressenti reste personnel et contribue anonymement à la météo de votre équipe.</p>
+            </div>
+            <button id="resetDemoBtn" class="button ghost small" type="button" title="Réinitialiser les données pré-remplies">
+              <i data-lucide="rotate-ccw" class="icon" aria-hidden="true"></i> Réinitialiser la démo
+            </button>
+          </div>
+
+          <div class="grid employee-grid">
+            <section class="card mood-card">
+              <div class="today-label">
+                <h2 class="card-title">Choisissez votre humeur du jour</h2>
+                <span class="tagline" id="checkinStateHint">Données pré-remplies sur 6 jours · testez votre vote du jour</span>
+              </div>
+
+              <div class="mood-options" id="moodOptionsGroup" role="group" aria-label="Choisissez votre humeur du jour">
+                <button class="mood-option" type="button" data-score="5" aria-label="Humeur : Excellent, 5 sur 5" aria-pressed="false">
+                  <span class="mood-face" aria-hidden="true"><i data-lucide="laugh" class="icon"></i></span>
+                  <span class="mood-word">Excellent</span><span class="mood-number">5 / 5</span>
+                </button>
+                <button class="mood-option" type="button" data-score="4" aria-label="Humeur : Bien, 4 sur 5" aria-pressed="false">
+                  <span class="mood-face" aria-hidden="true"><i data-lucide="smile" class="icon"></i></span>
+                  <span class="mood-word">Bien</span><span class="mood-number">4 / 5</span>
+                </button>
+                <button class="mood-option" type="button" data-score="3" aria-label="Humeur : Neutre, 3 sur 5" aria-pressed="false">
+                  <span class="mood-face" aria-hidden="true"><i data-lucide="meh" class="icon"></i></span>
+                  <span class="mood-word">Neutre</span><span class="mood-number">3 / 5</span>
+                </button>
+                <button class="mood-option" type="button" data-score="2" aria-label="Humeur : Difficile, 2 sur 5" aria-pressed="false">
+                  <span class="mood-face" aria-hidden="true"><i data-lucide="frown" class="icon"></i></span>
+                  <span class="mood-word">Difficile</span><span class="mood-number">2 / 5</span>
+                </button>
+                <button class="mood-option" type="button" data-score="1" aria-label="Humeur : Très difficile, 1 sur 5" aria-pressed="false">
+                  <span class="mood-face" aria-hidden="true"><i data-lucide="angry" class="icon"></i></span>
+                  <span class="mood-word">Très difficile</span><span class="mood-number">1 / 5</span>
+                </button>
+              </div>
+
+              <div id="savedCheckinBanner" class="quick-success hidden" role="status">
+                <div>
+                  <strong id="savedCheckinTitle">Check-in d'aujourd'hui enregistré</strong>
+                  <span id="savedCheckinSummary">Merci d'avoir pris ce moment pour vous.</span>
+                </div>
+                <button id="editCheckinBtn" class="button ghost small" type="button">
+                  <i data-lucide="pencil" class="icon" aria-hidden="true"></i> Modifier mon check-in
+                </button>
+              </div>
+
+              <div id="lowMoodForm" class="tags-wrap hidden">
+                <h2 class="card-title">Qu'est-ce qui pèse aujourd'hui ?</h2>
+                <p class="card-subtitle">Choisissez un ou plusieurs sujets pour orienter les actions de votre équipe (facultatif).</p>
+                <div class="tag-list" role="group" aria-label="Facteurs qui pèsent aujourd'hui">
+                  <button type="button" class="reason-tag" aria-pressed="false">Charge de travail</button>
+                  <button type="button" class="reason-tag" aria-pressed="false">Management</button>
+                  <button type="button" class="reason-tag" aria-pressed="false">Équilibre pro/perso</button>
+                  <button type="button" class="reason-tag" aria-pressed="false">Relations équipe</button>
+                  <button type="button" class="reason-tag" aria-pressed="false">Outils / processus</button>
+                  <button type="button" class="reason-tag" aria-pressed="false">Reconnaissance</button>
+                  <button type="button" class="reason-tag" aria-pressed="false">Ambiance</button>
+                  <button type="button" class="reason-tag" aria-pressed="false">Autre</button>
+                </div>
+                <label class="field-label" for="anonymousNote">Envie de lâcher prise ? (filtrage RGPD automatique)</label>
+                <textarea id="anonymousNote" maxlength="280" placeholder="Votre message reste 100 % anonyme… Tout email ou numéro saisi par erreur sera masqué automatiquement."></textarea>
+                <div class="form-row">
+                  <span class="form-hint" id="rgpdHint">Protection active : aucun identifiant personnel n'est transmis au manager.</span>
+                  <button id="submitMood" class="button" type="button">Enregistrer mon check-in <i data-lucide="check" class="icon" aria-hidden="true"></i></button>
+                </div>
+              </div>
+            </section>
+
+            <div class="grid">
+              <section class="card shield-card">
+                <div class="shield-icon" aria-hidden="true"><i data-lucide="shield-check" class="icon"></i></div>
+                <h2>Votre Bouclier Bien-être</h2>
+                <p>Un exercice de cohérence cardiaque guidé ou une écoute anonyme à votre rythme, dès que vous en ressentez le besoin.</p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button class="button secondary small" type="button" data-open-breath>Pause respiration <i data-lucide="wind" class="icon" aria-hidden="true"></i></button>
+                  <button class="button ghost small" type="button" id="helpLineBtn">Écoute 24/7 <i data-lucide="phone-call" class="icon" aria-hidden="true"></i></button>
+                </div>
+              </section>
+
+              <section class="card history-card">
+                <h2 class="card-title">Mon historique (7 jours)</h2>
+                <p class="card-subtitle">Les 6 derniers jours sont pré-remplis pour la démo (dont J-2 et J-1 difficiles).</p>
+                <div class="history-row"><div id="historyDots" class="history-dots"></div></div>
+              </section>
+
+              <div class="privacy-note">
+                <strong>Astuce démo jury :</strong> Cliquez sur <em>Difficile (2/5)</em> ou <em>Très difficile (1/5)</em> aujourd'hui pour compléter une série de 3 jours difficiles consécutifs et déclencher l'alerte préventive en haut d'écran.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-kudos" class="view hidden">
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">La reconnaissance fait du bien</div>
+              <h1>Faisons circuler les Kudos</h1>
+              <p class="subtitle">Un merci sincère en un clic pour renforcer l'entraide et la cohésion d'équipe.</p>
+            </div>
+          </div>
+          <div class="grid employee-grid">
+            <section class="card card-pad">
+              <h2 class="card-title">Envoyer un petit mot</h2>
+              <p class="card-subtitle">Choisissez un collègue et dites-lui ce que vous avez apprécié.</p>
+              <div class="kudos-form">
+                <div class="full">
+                  <label class="field-label" for="receiver">À qui souhaitez-vous envoyer un Kudos ?</label>
+                  <select id="receiver">
+                    <option value="">Choisir un collègue ou une équipe</option>
+                    <option>Camille (Marketing)</option>
+                    <option>Sam (Produit)</option>
+                    <option>Inès (Tech)</option>
+                    <option>Thomas (Design)</option>
+                    <option>Équipe Produit</option>
+                  </select>
+                </div>
+                <div class="full">
+                  <span class="field-label" id="badgeLabel">Pour quelle raison ?</span>
+                  <div id="badgeType" class="badge-options" role="group" aria-labelledby="badgeLabel">
+                    <button type="button" class="badge-option" data-badge="help" aria-pressed="true"><i data-lucide="hand-heart" class="icon" aria-hidden="true"></i>Merci pour ton aide</button>
+                    <button type="button" class="badge-option" data-badge="presentation" aria-pressed="false"><i data-lucide="presentation" class="icon" aria-hidden="true"></i>Super présentation</button>
+                    <button type="button" class="badge-option" data-badge="idea" aria-pressed="false"><i data-lucide="lightbulb" class="icon" aria-hidden="true"></i>Excellente idée</button>
+                    <button type="button" class="badge-option" data-badge="support" aria-pressed="false"><i data-lucide="heart-handshake" class="icon" aria-hidden="true"></i>Soutien précieux</button>
+                    <button type="button" class="badge-option" data-badge="team" aria-pressed="false"><i data-lucide="rocket" class="icon" aria-hidden="true"></i>Super esprit d'équipe</button>
+                  </div>
+                </div>
+                <div class="full">
+                  <button id="sendKudos" class="button" type="button">Envoyer le Kudos <i data-lucide="heart" class="icon" aria-hidden="true"></i></button>
+                </div>
+              </div>
+            </section>
+            <section class="card card-pad">
+              <h2 class="card-title">Les bonnes ondes</h2>
+              <p class="card-subtitle">Les derniers Kudos partagés au sein de l'entreprise</p>
+              <div id="kudosFeed"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="view-manager" class="view hidden">
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">Espace Manager</div>
+              <h1>La météo de votre équipe</h1>
+              <p class="subtitle">Suivez l'évolution du moral sur 3 jours, 7 jours ou 30 jours, sans jamais identifier un collaborateur.</p>
+            </div>
+
+            <div class="range-switcher" role="group" aria-label="Choisir la période du graphique">
+              <button type="button" class="range-btn" data-range="3" aria-pressed="false">3 derniers jours</button>
+              <button type="button" class="range-btn" data-range="7" aria-pressed="false">Dernière semaine</button>
+              <button type="button" class="range-btn active" data-range="30" aria-pressed="true">Mois (30 j)</button>
+            </div>
+          </div>
+
+          <div class="grid manager-grid">
+            <div class="grid">
+              <section class="card chart-card">
+                <div class="today-label">
+                  <div>
+                    <h2 class="card-title" id="chartPeriodTitle">Humeur moyenne de l'équipe · 30 derniers jours</h2>
+                    <p class="card-subtitle">Survolez un point pour inspecter le score quotidien agrégé (le point « Aujourd'hui » reflète votre check-in).</p>
+                  </div>
+                  <div class="chart-meta">
+                    <span>Moyenne période : <strong id="chartPeriodAvg">3,6 / 5</strong></span>
+                  </div>
+                </div>
+                <div class="chart-wrap">
+                  <canvas id="moodChart" role="img" aria-label="Graphique interactif montrant la tendance moyenne du moral de l'équipe"></canvas>
+                  <div id="chartTooltip" class="chart-tooltip hidden"></div>
+                </div>
+                <div class="risk-banner" id="managerSignalBanner">
+                  <strong><i data-lucide="triangle-alert" class="icon" aria-hidden="true"></i> Signal à surveiller · Charge de travail & Équilibre pro / perso</strong>
+                  <span id="managerSignalText">Les retours récents montrent un fléchissement sur les derniers jours. Ce signal est agrégé sur l'équipe et ne permet pas d'identifier les répondants.</span>
+                </div>
+              </section>
+
+                <h2 class="card-title">Météo par pôle & Quorum d'anonymat</h2>
+                <p class="card-subtitle">Règle RGPD stricte : les résultats sont verrouillés si moins de 5 collaborateurs ont répondu.</p>
+                <div class="team-list">
+                  <div class="team-line">
+                    <span>Marketing<small class="team-meta">12 répondants</small></span>
+                    <div class="progress"><i id="marketingBar" style="width:76%"></i></div>
+                    <b id="marketingScore">3,8</b>
+                  </div>
+                  <div class="team-line">
+                    <span>Produit<small class="team-meta">9 répondants</small></span>
+                    <div class="progress"><i style="width:72%"></i></div>
+                    <b>3,6</b>
+                  </div>
+                  <div class="team-line">
+                    <span>Tech<small class="team-meta">15 répondants</small></span>
+                    <div class="progress"><i style="width:64%;background:#d8a33e"></i></div>
+                    <b>3,2</b>
+                  </div>
+                  <div class="team-line">
+                    <span>Finance<small class="team-meta">7 répondants</small></span>
+                    <div class="progress"><i style="width:78%"></i></div>
+                    <b>3,9</b>
+                  </div>
+                  <div class="team-line locked" aria-label="Pôle Design et Juridique : données masquées car seulement 3 répondants sur 5 requis">
+                    <span>Design / Juridique<small class="team-meta">3 / 5 répondants</small></span>
+                    <div class="locked-bar">
+                      <i data-lucide="lock" class="icon" aria-hidden="true" style="width:13px;height:13px"></i>
+                      Seuil d'anonymat non atteint (&lt; 5 réponses)
+                    </div>
+                    <span class="locked-badge">Masqué</span>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <section class="card action-card">
+              <h2 class="card-title">Votre centre d'action</h2>
+              <p class="card-subtitle">Actions managériales recommandées selon les tags majoritaires.</p>
+              <div class="action-item">
+                <span class="action-icon" aria-hidden="true"><i data-lucide="briefcase" class="icon"></i></span>
+                <div>
+                  <strong>Réguler la charge de travail</strong>
+                  <p>Organiser un point de priorisation rapide de 15 minutes pour identifier les tâches qui peuvent être reportées ou déléguées.</p>
+                </div>
+              </div>
+              <div class="action-item">
+                <span class="action-icon" aria-hidden="true"><i data-lucide="scale" class="icon"></i></span>
+                <div>
+                  <strong>Protéger l'équilibre pro / perso</strong>
+                  <p>Rappeler le droit à la déconnexion, limiter les sollicitations après 18h et protéger les créneaux sans réunion.</p>
+                </div>
+              </div>
+              <div class="action-item">
+                <span class="action-icon" aria-hidden="true"><i data-lucide="messages-square" class="icon"></i></span>
+                <div>
+                  <strong>Créer un espace d'écoute 1-to-1</strong>
+                  <p>Proposer des points individuels ouverts, sans agenda imposé, centrés sur les blocages réels et les besoins d'autonomie.</p>
+                </div>
+              </div>
+              <div class="privacy-note">
+                <strong>Garantie d'anonymat :</strong> Les notes individuelles et l'identité des votants ne sont jamais accessibles. Seules les moyennes d'équipes d'au moins 5 répondants sont calculées.
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section id="view-rh" class="view hidden">
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">Espace RH / Direction</div>
+              <h1>Cartographie des risques</h1>
+              <p class="subtitle">Une vue macroscopique pour piloter les actions de prévention RSE et mesurer leur impact.</p>
+            </div>
+            <button class="button ghost small" id="rhExport" type="button">
+              Exporter le rapport CSV <i data-lucide="download" class="icon" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="grid rh-grid">
+            <div class="grid">
+              <section class="card score-card">
+                <div class="score-ring" aria-label="Indice MOODLY 3,8 sur 5"><div><strong id="rhGlobalScore">3,8</strong><small>/ 5</small></div></div>
+                <div class="score-copy">
+                  <h2>Indice global MOODLY</h2>
+                  <p>Score agrégé de l'organisation sur les 30 derniers jours (46 répondants actifs).</p>
+                  <span class="risk-level"><i data-lucide="circle-check" class="icon" aria-hidden="true"></i> Vigilance modérée · Suivi actif</span>
+                </div>
+              </section>
+              <section class="card card-pad">
+                <h2 class="card-title">Risques psycho-sociaux par département</h2>
+                <p class="card-subtitle">Seuil de confidentialité RH : au moins 10 répondants par département.</p>
+                <div class="team-list">
+                  <div class="team-line"><span>Marketing (12)</span><div class="progress"><i style="width:82%;background:var(--green)"></i></div><b>4,1</b></div>
+                  <div class="team-line"><span>Produit (11)</span><div class="progress"><i style="width:72%;background:#c99a32"></i></div><b>3,6</b></div>
+                  <div class="team-line"><span>Tech (15)</span><div class="progress"><i style="width:58%;background:#d17954"></i></div><b>2,9</b></div>
+                  <div class="team-line"><span>RH & Support (10)</span><div class="progress"><i style="width:86%;background:var(--green)"></i></div><b>4,3</b></div>
+                  <div class="team-line locked">
+                    <span>Juridique (4)<small class="team-meta">Quorum RH &lt; 10</small></span>
+                    <div class="locked-bar"><i data-lucide="lock" class="icon" aria-hidden="true" style="width:13px;height:13px"></i> Masqué (seuil RH de 10 répondants)</div>
+                    <span class="locked-badge">Masqué</span>
+                  </div>
+                </div>
+              </section>
+              <section class="card card-pad">
+                <h2 class="card-title">Impact des actions RSE</h2>
+                <p class="card-subtitle">Comparaison avant / après mise en place d'un dispositif QVCT</p>
+                <div class="impact-compare">
+                  <div class="impact-row"><span>Avant charte de déconnexion & télétravail vendredi</span><strong>3,4 / 5</strong></div>
+                  <div class="progress"><i style="width:68%;background:#c7c1d9"></i></div>
+                  <div class="impact-row"><span>Après 4 semaines d'application</span><strong>3,9 / 5</strong></div>
+                  <div class="progress"><i style="width:78%;background:var(--purple)"></i></div>
+                </div>
+              </section>
+            </div>
+            <div class="grid">
+              <section class="card impact-card">
+                <h2 class="card-title">Une action qui fait la différence</h2>
+                <div class="impact-number">+15 %</div>
+                <p class="impact-caption">de hausse du moral moyen observée le jeudi soir après l'instauration du télétravail flexible le vendredi.</p>
+                <div class="privacy-note">Indicateur calculé sur les données agrégées sans traçabilité individuelle.</div>
+              </section>
+              <section class="card card-pad">
+                <h2 class="card-title">Bornes connectées (IoT)</h2>
+                <p class="card-subtitle">Points de contact physiques pour inclure les équipes terrain sans smartphone</p>
+                <div class="terminal-row"><div class="terminal-place"><i aria-hidden="true"><i data-lucide="coffee" class="icon"></i></i><div>Machine à café<div class="small-muted">Bâtiment A · aujourd'hui</div></div></div><strong>78 % positifs</strong></div>
+                <div class="terminal-row"><div class="terminal-place"><i aria-hidden="true"><i data-lucide="door-open" class="icon"></i></i><div>Hall d'accueil<div class="small-muted">Bâtiment A · aujourd'hui</div></div></div><strong>72 % positifs</strong></div>
+                <div class="terminal-row"><div class="terminal-place"><i aria-hidden="true"><i data-lucide="building-2" class="icon"></i></i><div>Sortie open-space<div class="small-muted">Bâtiment B · aujourd'hui</div></div></div><strong>65 % positifs</strong></div>
+              </section>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <div id="breathModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="breathTitle">
+    <section class="modal">
+      <button class="modal-close" id="closeBreath" type="button" aria-label="Fermer l'exercice">×</button>
+      <div class="eyebrow">Votre Bouclier Bien-être</div>
+      <h2 id="breathTitle">Prenons une respiration</h2>
+      <p>Installez-vous confortablement. Cliquez sur « Commencer » pour lancer le guide de cohérence cardiaque.</p>
+      <div id="breathOrb" class="breath-orb" aria-live="polite">Prêt</div>
+      <p id="breathTimer">Inspirez 4 s · Retenez 4 s · Expirez 6 s</p>
+      <div class="modal-actions">
+        <button class="button" id="startBreath" type="button">Commencer</button>
+        <button class="button ghost" id="finishBreath" type="button">Terminer</button>
+      </div>
+      <p style="font-size:9px;margin-top:16px">Cet exercice d'apaisement ne remplace pas un accompagnement médical ou psychologique.</p>
+    </section>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="script.js"></script>
+</body>
+</html>
