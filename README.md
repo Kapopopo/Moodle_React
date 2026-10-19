@@ -1,0 +1,5 @@
+# MOODLY
+
+MOODLY est une application de suivi du bien-être au travail (Mood Tracking) conçue pour prévenir l'épuisement professionnel et accompagner la démarche RSE des entreprises. Alors que 34 % des salariés français seraient en burn-out et que la moitié estime que leur détresse psychologique est ignorée, la plateforme offre un espace d'expression quotidien et anonyme.
+
+Elle permet aux collaborateurs d'indiquer leur humeur en moins de 5 secondes, de valoriser leurs collègues via des Kudos et de bénéficier d'un soutien immédiat (exercices de respiration et écoute confidentielle) en cas de journée difficile. En parallèle, elle fournit aux managers et aux équipes RH des indicateurs agrégés et des recommandations d'actions concrètes pour détecter les signaux faibles et améliorer le quotidien des équipes, dans le strict respect de l'anonymat de chacun.
