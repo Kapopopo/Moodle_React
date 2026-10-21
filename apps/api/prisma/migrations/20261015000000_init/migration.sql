@@ -1,0 +1,12 @@
+CREATE TYPE "Role" AS ENUM ('EMPLOYEE', 'MANAGER');
+CREATE TYPE "Tag" AS ENUM ('CHARGE_DE_TRAVAIL', 'AMBIANCE_EQUIPE', 'MANAGEMENT', 'EQUILIBRE_PERSO', 'CONDITIONS_TRAVAIL');
+CREATE TABLE "Team" ("id" TEXT NOT NULL, "name" TEXT NOT NULL, CONSTRAINT "Team_pkey" PRIMARY KEY ("id"));
+CREATE TABLE "User" ("id" TEXT NOT NULL, "email" TEXT NOT NULL, "passwordHash" TEXT NOT NULL, "firstName" TEXT NOT NULL, "role" "Role" NOT NULL, "teamId" TEXT NOT NULL, CONSTRAINT "User_pkey" PRIMARY KEY ("id"));
+CREATE TABLE "Participation" ("id" TEXT NOT NULL, "userId" TEXT NOT NULL, "day" DATE NOT NULL, CONSTRAINT "Participation_pkey" PRIMARY KEY ("id"));
+CREATE TABLE "MoodEntry" ("id" TEXT NOT NULL, "teamId" TEXT NOT NULL, "day" DATE NOT NULL, "score" INTEGER NOT NULL, "tags" "Tag"[], CONSTRAINT "MoodEntry_pkey" PRIMARY KEY ("id"), CONSTRAINT "MoodEntry_score_check" CHECK ("score" BETWEEN 1 AND 5));
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX "Participation_userId_day_key" ON "Participation"("userId", "day");
+CREATE INDEX "MoodEntry_teamId_day_idx" ON "MoodEntry"("teamId", "day");
+ALTER TABLE "User" ADD CONSTRAINT "User_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Participation" ADD CONSTRAINT "Participation_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "MoodEntry" ADD CONSTRAINT "MoodEntry_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
