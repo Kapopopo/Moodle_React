@@ -10,9 +10,7 @@
   "dependencies": {
     "@capacitor/android": "^7.0.0",
     "@capacitor/core": "^7.0.0",
-    "@capacitor/filesystem": "^7.1.9",
     "@capacitor/preferences": "^7.0.0",
-    "@capacitor/share": "^7.0.4",
     "@tabler/icons-react": "^3.30.0",
     "date-fns": "^4.1.0",
     "react": "^19.0.0",
