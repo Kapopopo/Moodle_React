@@ -5,10 +5,9 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { PrismaClient, Prisma, Role, Tag, IdeaCategory, IdeaStatus } from '@prisma/client';
+import { PrismaClient, Prisma, Role, Tag } from '@prisma/client';
 import { z } from 'zod';
 import { aggregate, parisDay, shiftDay } from './aggregate.js';
-import { vssRouter } from './vss-routes.js';
 
 export const prisma = new PrismaClient();
 export const app = express();
@@ -29,7 +28,7 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
   let id: string;
   try { const decoded = jwt.verify(token, secret, { algorithms: ['HS256'] }); if (typeof decoded === 'string' || !decoded.sub) throw new Error(); id = decoded.sub; }
   catch { error(res, 401, 'UNAUTHORIZED', 'Ta session a expiré.'); return; }
-  prisma.user.findUnique({ where: { id }, select: selectUser }).then(user => { if (!user) { error(res, 401, 'UNAUTHORIZED', 'Compte introuvable.'); return; } if (user.role === Role.VSS_REFERENT) { error(res, 403, 'FORBIDDEN', 'Ce compte référent d’entreprise n’est plus habilité. Contacte l’administration Moodly.'); return; } req.user = user; next(); }).catch(next);
+  prisma.user.findUnique({ where: { id }, select: selectUser }).then(user => { if (!user) { error(res, 401, 'UNAUTHORIZED', 'Compte introuvable.'); return; } if ((user.role !== Role.EMPLOYEE && user.role !== Role.MANAGER)) { error(res, 403, 'FORBIDDEN', 'Ce rôle ne fait pas partie de la V1.'); return; } req.user = user; next(); }).catch(next);
 };
 export const requireRole = (role: Role) => (req: Request, res: Response, next: NextFunction) => {
   if (req.user?.role !== role) { error(res, 403, 'FORBIDDEN', 'Cette page ne correspond pas à ton rôle.'); return; } next();
@@ -41,7 +40,7 @@ app.post('/api/auth/login', rateLimit({ windowMs: 15 * 60_000, limit: 20, standa
   // Always hash-compare to avoid exposing whether an address exists through timing.
   const valid = await bcrypt.compare(password, user?.passwordHash || '$2b$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW');
   if (!user || !valid) return error(res, 401, 'INVALID_CREDENTIALS', 'E-mail ou mot de passe incorrect.');
-  if (user.role === Role.VSS_REFERENT) return error(res, 403, 'FORBIDDEN', 'Ce compte référent d’entreprise n’est plus habilité. Contacte l’administration Moodly.');
+  if ((user.role !== Role.EMPLOYEE && user.role !== Role.MANAGER)) return error(res, 403, 'FORBIDDEN', 'Ce rôle ne fait pas partie de la V1.');
   return res.json({ token: jwt.sign({}, secret, { subject: user.id, expiresIn: '8h', algorithm: 'HS256' }), user: { id: user.id, firstName: user.firstName, role: user.role, team: { id: user.team.id, name: user.team.name } } });
 }));
 app.use('/api', requireAuth);
@@ -63,30 +62,6 @@ app.get('/api/teams/me/summary', requireRole(Role.MANAGER), asyncRoute(async (re
   const to = parisDay(), from = shiftDay(to, -29), teamId = req.user!.team.id;
   const [entries, employeeCount] = await Promise.all([prisma.moodEntry.findMany({ where: { teamId, day: { gte: new Date(from), lte: new Date(to) } }, select: { day: true, score: true, tags: true } }), prisma.user.count({ where: { teamId, role: Role.EMPLOYEE } })]);
   res.json({ ...aggregate(entries, employeeCount, to, 30, minimum), minimumResponses: minimum });
-}));
-// External services are opened by the employee; no mood, note or token is forwarded.
-app.get('/api/support', requireRole(Role.EMPLOYEE), (_req, res) => {
-  res.json({ therapyUrl: 'https://www.betterhelp.com/comment-fonctionne-betterhelp/', reportUrl: null, officialReportUrl: 'https://www.service-public.gouv.fr/particuliers/vosdroits/R50241', rightsUrl: 'https://www.service-public.gouv.fr/particuliers/vosdroits/F1043', moralHarassmentUrl: 'https://www.service-public.gouv.fr/particuliers/vosdroits/F2354' });
-});
-app.use('/api/vss', vssRouter(prisma, requireRole));
-const requireTeamMember = (req: Request, res: Response, next: NextFunction) => { if ((req.user?.role === Role.VSS_REFERENT || req.user?.role === Role.ADMIN)) { error(res, 403, 'FORBIDDEN', 'Cet espace est réservé aux collaborateurs et managers.'); return; } next(); };
-const ideaSelect = { id: true, category: true, title: true, description: true, status: true, managerNote: true } satisfies Prisma.IdeaSelect;
-app.get('/api/ideas', requireTeamMember, asyncRoute(async (req, res) => {
-  const { cursor } = z.object({ cursor: z.string().uuid().optional() }).strict().parse(req.query);
-  const rows = await prisma.idea.findMany({ where: { teamId: req.user!.team.id, ...(cursor ? { id: { gt: cursor } } : {}) }, select: ideaSelect, orderBy: { id: 'asc' }, take: 51 });
-  res.json({ ideas: rows.slice(0, 50), nextCursor: rows.length > 50 ? rows[49].id : null });
-}));
-app.post('/api/ideas', requireRole(Role.EMPLOYEE), rateLimit({ windowMs: 60 * 60_000, limit: 30, standardHeaders: 'draft-7', legacyHeaders: false, handler: (_req, res) => error(res, 429, 'RATE_LIMITED', 'Trop de propositions. Réessaie plus tard.') }), asyncRoute(async (req, res) => {
-  const data = z.object({ title: z.string().trim().min(3).max(100), description: z.string().trim().min(10).max(1500), category: z.nativeEnum(IdeaCategory) }).strict().parse(req.body);
-  const idea = await prisma.idea.create({ data: { ...data, teamId: req.user!.team.id }, select: ideaSelect });
-  res.status(201).json(idea);
-}));
-app.patch('/api/ideas/:id', requireRole(Role.MANAGER), asyncRoute(async (req, res) => {
-  const id = z.string().uuid().parse(req.params.id);
-  const data = z.object({ status: z.nativeEnum(IdeaStatus), managerNote: z.string().trim().max(800) }).strict().parse(req.body);
-  const result = await prisma.idea.updateMany({ where: { id, teamId: req.user!.team.id }, data });
-  if (!result.count) return error(res, 404, 'NOT_FOUND', 'Proposition introuvable.');
-  res.json({ updated: true });
 }));
 app.use((_req, res) => { error(res, 404, 'NOT_FOUND', 'Route introuvable.'); });
 app.use((e: unknown, _req: Request, res: Response, _next: NextFunction) => {

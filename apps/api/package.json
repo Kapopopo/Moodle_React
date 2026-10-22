@@ -8,9 +8,8 @@
     "start": "node dist/server.js",
     "test": "vitest run",
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev --name init",
-    "db:seed": "tsx prisma/seed.ts",
-    "vss:setup": "tsx prisma/setup-vss.ts"
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",
