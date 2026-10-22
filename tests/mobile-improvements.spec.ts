@@ -35,7 +35,8 @@ test('mobile keeps five tabs and all additional pages accessible', async ({ page
 test('first mood activates private history and persists with notes across navigation and reload', async ({ page }) => {
   await openEmployee(page, '/humeur');
   await page.getByRole('button', { name: 'Bien', exact: true }).click();
-  await expect(page.getByRole('checkbox', { name: /Garder cette humeur/ })).toBeChecked();
+  await expect(page.getByRole('checkbox', { name: /Garder cette humeur/ })).not.toBeChecked();
+  await page.getByRole('checkbox', { name: /Garder cette humeur/ }).check();
   await page.getByRole('button', { name: 'Valider mon humeur' }).click();
   await expect(page.getByRole('heading', { name: 'Merci, c’est noté.' })).toBeVisible();
   await page.locator('.mobile-navigation').getByRole('link', { name: 'Mon carnet' }).click();
@@ -102,4 +103,20 @@ test('pause controls remain on screen and actual audio follows play, pause, rese
   await expect(dialog).toHaveCount(0);
   expect(await page.evaluate(() => (window as any).__pauseAudio.paused)).toBe(true);
   expect(errors).toEqual([]);
+});
+
+test('administrators cannot open employee or manager spaces by URL', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('CapacitorStorage.moodly.token', 'admin-test-session'));
+  await page.route('**/api/**', route => {
+    const path = new URL(route.request().url()).pathname;
+    if (path === '/api/auth/me') return route.fulfill({ json: { ...user, role: 'ADMIN' } });
+    if (path === '/api/vss/companies') return route.fulfill({ json: { companies: [] } });
+    if (path === '/api/vss/inbox') return route.fulfill({ json: { reports: [], nextCursor: null } });
+    return route.fulfill({ status: 403, json: { error: { message: 'Accès refusé' } } });
+  });
+  for (const path of ['/pauses', '/humeur', '/carnet', '/equipe', '/idees', '/aide', '/aide/signalement']) {
+    await page.goto(path);
+    await expect(page).toHaveURL(/\/signalements$/);
+    await expect(page.getByRole('heading', { name: 'Réception des signalements.' })).toBeVisible();
+  }
 });
