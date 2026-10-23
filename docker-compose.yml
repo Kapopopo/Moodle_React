@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: moodly
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-moodly_local}
+      POSTGRES_DB: moodly
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - moodly_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U moodly']
+      interval: 5s
+      retries: 10
+volumes:
+  moodly_data:

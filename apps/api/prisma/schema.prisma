@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+enum Role {
+  EMPLOYEE
+  MANAGER
+  VSS_REFERENT
+  ADMIN
+}
+enum Tag {
+  CHARGE_DE_TRAVAIL
+  AMBIANCE_EQUIPE
+  MANAGEMENT
+  EQUILIBRE_PERSO
+  CONDITIONS_TRAVAIL
+}
+model Team {
+  id String @id @default(uuid())
+  name String
+  members User[]
+  moods MoodEntry[]
+  ideas Idea[]
+  vssReports VssReport[]
+}
+model User {
+  id String @id @default(uuid())
+  email String @unique
+  passwordHash String
+  firstName String
+  role Role
+  teamId String
+  team Team @relation(fields: [teamId], references: [id])
+  participations Participation[]
+  journal PersonalJournal?
+}
+model Participation {
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  day DateTime @db.Date
+  @@unique([userId, day])
+}
+model MoodEntry {
+  id String @id @default(uuid())
+  teamId String
+  team Team @relation(fields: [teamId], references: [id])
+  day DateTime @db.Date
+  score Int
+  tags Tag[]
+  @@index([teamId, day])
+}
+
+enum IdeaCategory {
+  GAME
+  OUTING
+  WELLBEING
+  OTHER
+}
+enum IdeaStatus {
+  NEW
+  REVIEWING
+  PLANNED
+  DECLINED
+}
+// No author, submission time, or relationship to moods or participations.
+model Idea {
+  id String @id @default(uuid())
+  teamId String
+  team Team @relation(fields: [teamId], references: [id])
+  category IdeaCategory
+  title String
+  description String
+  status IdeaStatus @default(NEW)
+  managerNote String @default("")
+  @@index([teamId, id])
+}
+
+
+enum VssStatus {
+  RECEIVED
+  REVIEWING
+  CLOSED
+}
+model VssReport {
+  id String @id @default(uuid())
+  teamId String
+  team Team @relation(fields: [teamId], references: [id])
+  submissionKey String
+  encryptedPayload String
+  questionnaireVersion Int
+  status VssStatus @default(RECEIVED)
+  createdAt DateTime @default(now())
+  accesses VssAccess[]
+  @@unique([teamId, submissionKey])
+  @@index([teamId, createdAt])
+}
+model VssAccess {
+  id String @id @default(uuid())
+  reportId String
+  report VssReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  actorId String
+  action String
+  at DateTime @default(now())
+}
+
+// Private account journal, separate from anonymous team moods.
+model PersonalJournal {
+  userId String @id
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  data Json
+  revision Int @default(1)
+}

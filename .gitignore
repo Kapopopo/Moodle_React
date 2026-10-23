@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+apps/mobile/android/.gradle/
+apps/mobile/android/local.properties
+
+test-results/
+playwright-report/
+artifacts/
