@@ -17,3 +17,8 @@
 - `apps/mobile/src/journal-widgets.tsx` : notes, intentions et comparaison à la veille.
 - `apps/mobile/public/audio/` : ambiance sonore des pauses.
 - `tests/mobile-improvements.spec.ts` : carnet et pauses dans le navigateur.
+
+- `apps/mobile/src/community.tsx` : boîte à idées et réponse manager.
+- `apps/mobile/src/vss.tsx` : questionnaire et traitement des signalements.
+- `apps/api/src/vss-*.ts` : validation, chiffrement et accès aux dossiers.
+- `apps/api/prisma/setup-vss.ts` : création du compte administrateur.
