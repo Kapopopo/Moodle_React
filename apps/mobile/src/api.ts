@@ -1,6 +1,6 @@
 import { Capacitor } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
-export type User = { id: string; firstName: string; role: 'EMPLOYEE' | 'MANAGER'; team: { id: string; name: string } };
+export type User = { id: string; firstName: string; role: 'EMPLOYEE' | 'MANAGER' | 'ADMIN'; team: { id: string; name: string } };
 export type Summary = { period: { from: string; to: string }; participationRate: number; totalResponses: number; minimumResponses: number; days: { date: string; isWorkday: boolean; masked: boolean; total: number | null; distribution: Record<string, number> | null }[]; topTags: { tag: string; share: number }[] };
 export const tags: Record<string, string> = { CHARGE_DE_TRAVAIL: 'Charge de travail', AMBIANCE_EQUIPE: 'Ambiance d’équipe', MANAGEMENT: 'Management', EQUILIBRE_PERSO: 'Équilibre perso', CONDITIONS_TRAVAIL: 'Conditions de travail' };
 export class ApiError extends Error { constructor(public status: number, message: string) { super(message); } }

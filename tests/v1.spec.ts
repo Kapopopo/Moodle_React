@@ -17,7 +17,7 @@ test('employee submits once, sees generic confirmation after reload and can log 
   await session(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/accueil');
-  await expect(page.locator('.mobile-navigation a')).toHaveCount(5);
+  await expect(page.locator('.mobile-navigation a')).toHaveCount(7);
   await page.getByRole('link', { name: 'Partager mon humeur' }).click();
   await page.getByRole('button', { name: 'Valider mon humeur' }).click();
   await expect(page.getByRole('alert')).toHaveText('Choisis d’abord ton humeur');
@@ -34,7 +34,7 @@ test('employee submits once, sees generic confirmation after reload and can log 
 
 test('removed spaces are inaccessible and manager cannot submit moods', async ({ page }) => {
   await session(page, 'MANAGER');
-  for (const path of ['/idees', '/aide', '/aide/signalement', '/signalements', '/admin/tableau-de-bord', '/plus']) {
+  for (const path of ['/aide', '/admin/tableau-de-bord', '/plus']) {
     await page.goto(path);
     await expect(page).toHaveURL(/\/accueil$/);
   }

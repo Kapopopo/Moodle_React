@@ -6,15 +6,17 @@ import { Comparison, NoteEditor, Intention, dayTitle } from './journal-widgets';
 import { readJournal, changeJournal, type Journal } from './personal';
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { IconArrowRight, IconHome, IconMoodSmile, IconChartBar, IconShieldLock, IconCalendar, IconWind, IconChevronLeft, IconChevronRight, IconCheck, IconClock, IconPlayerPlay, IconPlayerPause, IconRefresh, IconLock, IconBook, IconHeart, IconX, IconArrowUpRight } from '@tabler/icons-react';
+import { IconArrowRight, IconHome, IconBulb, IconMoodSmile, IconChartBar, IconShieldLock, IconCalendar, IconWind, IconChevronLeft, IconChevronRight, IconCheck, IconClock, IconPlayerPlay, IconPlayerPause, IconRefresh, IconLock, IconBook, IconHeart, IconX, IconArrowUpRight } from '@tabler/icons-react';
 import { request, tags, type User } from './api';
 
 export function Navigation({ user }: { user: User; mobile?: boolean }) {
-  const links = [
+  const links = user.role === 'ADMIN' ? [{ to: '/signalements', label: 'Signalements VSS', icon: IconShieldLock }] : [
     { to: '/accueil', label: 'Accueil', icon: IconHome },
     user.role === 'EMPLOYEE' ? { to: '/humeur', label: 'Mon humeur', icon: IconMoodSmile } : { to: '/equipe', label: 'Mon équipe', icon: IconChartBar },
     ...(user.role === 'EMPLOYEE' ? [{ to: '/carnet', label: 'Mon carnet', icon: IconCalendar }] : []),
     { to: '/pauses', label: 'Mes pauses', icon: IconWind },
+    { to: '/idees', label: 'Boîte à idées', icon: IconBulb },
+    ...(user.role === 'EMPLOYEE' ? [{ to: '/aide/signalement', label: 'VSS et harcèlement', icon: IconShieldLock }] : []),
     { to: '/confiance', label: 'Confiance', icon: IconShieldLock },
   ];
   return <nav className="space-nav" aria-label="Navigation principale">{links.map(item => <NavLink key={item.to} to={item.to} end className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}><item.icon size={20}/><span>{item.label}</span></NavLink>)}</nav>;
