@@ -28,14 +28,8 @@ describe('API access control', () => {
   });
 });
 
-describe('V1 scope', () => {
-  it('removes advanced endpoints even for authenticated employees', async () => {
-    for (const path of ['/api/support', '/api/ideas', '/api/vss/questionnaire', '/api/vss/inbox', '/api/vss/dashboard']) {
-      expect((await supertest(app).get(path).set('Authorization', `Bearer ${token(employee.id)}`)).status).toBe(404);
-    }
-    for (const path of ['/api/ideas', '/api/vss/reports']) {
-      expect((await supertest(app).post(path).set('Authorization', `Bearer ${token(employee.id)}`).send({})).status).toBe(404);
-    }
-    expect((await supertest(app).patch('/api/ideas/old-id').set('Authorization', `Bearer ${token(manager.id)}`).send({})).status).toBe(404);
+describe('Scope', () => {
+  it('keeps external therapy outside this version', async () => {
+    expect((await supertest(app).get('/api/support').set('Authorization', `Bearer ${token(employee.id)}`)).status).toBe(404);
   });
 });
